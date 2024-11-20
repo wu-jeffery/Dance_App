@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 # .gitignore
 venv/
+=======
+__pycache__
+.DS_Store
+>>>>>>> 6a2d125490efd10732c7ad592ef917c0a2c1fc96

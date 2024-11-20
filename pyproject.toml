@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "dance-app"
+version = "0.1.0"
+description = ""
+authors = ["mayamalik1 <maya.malik2017@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+flask = "^3.1.0"
+ffmpeg = "^1.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
