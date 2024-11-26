@@ -5,17 +5,164 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #f15724;
+  --dropdown-background: rgba(0, 0, 0, 0.7); /* Black-ish translucent background */
+  --dropdown-text: #f15724; /* Orange text */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --dropdown-background: rgba(0, 0, 0, 0.7); /* Black-ish translucent background */
+    --dropdown-text: #f15724; /* Orange text */
   }
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+/* Landing Page Container */
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Ensures full viewport height */
+  text-align: center;
+  padding: 0 20px;
+}
+
+.container-title {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.container-heading {
+  font-size: 1.5rem;
+  color: var(--foreground);
+  margin-top: 10px;
+}
+
+.upload-button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.upload-button::-webkit-file-upload-button {
+  display: none; /* Hide the default file input button */
+}
+
+.upload-button:hover {
+  transform: scale(1.05);
+}
+
+/* Video Container */
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.video-sidebar {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Button Styling */
+.video-sidebar button {
+  background-color: var(--dropdown-background);
+  border: 2px solid var(--dropdown-text);
+  border-radius: 4px;
+  padding: 10px;
+  color: var(--dropdown-text);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.video-sidebar button:hover {
+  background-color: var(--dropdown-text);
+  color: white;
+  transform: scale(1.05);
+}
+
+/* Dropdown Menu */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-btn {
+  background-color: var(--dropdown-background);
+  border: 2px solid var(--dropdown-text);
+  border-radius: 4px;
+  padding: 10px;
+  color: var(--dropdown-text);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.dropdown-btn:hover {
+  background-color: var(--dropdown-text);
+  color: white;
+  transform: scale(1.05);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--dropdown-background); /* Translucent black background */
+  border: 2px solid var(--dropdown-text); /* Orange border */
+  border-radius: 4px;
+  width: 100%;
+  padding: 5px 0;
+  z-index: 100;
+}
+
+.dropdown-menu button {
+  width: 100%;
+  padding: 10px;
+  text-align: left;
+  background-color: transparent; /* Transparent button background */
+  border: none;
+  cursor: pointer;
+  color: var(--dropdown-text); /* Orange text */
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-menu button:hover {
+  background-color: var(--dropdown-text); /* Orange background on hover */
+  color: white; /* White text on hover */
+}
+
+/* Scrollbar */
+.video-scrollbar {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 50;
+}
+
+.video-scrollbar input[type="range"] {
+  width: 100%;
+  cursor: pointer;
 }
