@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -14,13 +12,15 @@ export default function Home() {
   const [playbackRate, setPlaybackRate] = useState<number>(1);
   const [bpm, setBPM] = useState<number | null>(null);
   const [timestamps, setTimestamps] = useState<number[] | null>(null);
-
-  // file upload
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [duration, setDuration] = useState<number>(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setVideoFile(file);
-      const url = URL.createObjectURL(file); 
+      const url = URL.createObjectURL(file);
       setVideoURL(url);
     }
   };
@@ -68,37 +68,39 @@ export default function Home() {
     if (canvas && video && videoURL) {
       const ctx = canvas.getContext("2d");
 
-      // match canvas size to video size
+      // Match canvas size to video size
       video.addEventListener("loadedmetadata", () => {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
+        setDuration(video.duration);
+        video.play(); // Automatically play the video
       });
 
       const drawFrame = () => {
-        // stop playing if its paused or ends
-        if (video.paused || video.ended) return; 
+        if (video.paused || video.ended) return;
         if (ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height); 
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-          // mirror horizontally
+          // Mirror the video
           if (isMirrored) {
             ctx.save();
-            ctx.scale(-1, 1); 
+            ctx.scale(-1, 1);
             ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
             ctx.restore();
           } else {
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           }
         }
-        requestAnimationFrame(drawFrame); // Continue the animation loop
+        setCurrentTime(video.currentTime); // Update current time for the scrollbar
+        requestAnimationFrame(drawFrame);
       };
 
       video.addEventListener("play", () => {
-        requestAnimationFrame(drawFrame); // Start rendering frames when the video plays
+        requestAnimationFrame(drawFrame);
       });
 
-      // Set playback speed when it changes
-      video.playbackRate = playbackRate;
+      video.playbackRate = playbackRate; // Set playback speed
+      drawFrame();
     }
   }, [videoURL, isMirrored, playbackRate]);
 
@@ -106,81 +108,84 @@ export default function Home() {
     const video = videoRef.current;
     if (video) {
       if (video.paused) {
-        video.play(); // Play the video
+        video.play();
       } else {
-        video.pause(); // Pause the video
+        video.pause();
       }
     }
   };
 
-  const toggleMirror = () => {
-    setIsMirrored((prev) => !prev); // Flip the mirroring state
+  const toggleMirror = () => setIsMirrored((prev) => !prev);
+  const changeSpeed = (speed: number) => {
+    setPlaybackRate(speed);
+    setIsDropdownOpen(false); // Close the dropdown after selecting a speed
   };
 
-  const changeSpeed = (speed: number) => {
-    setPlaybackRate(speed); // Update playback rate
+  const handleSeek = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const video = videoRef.current;
+    const time = parseFloat(event.target.value);
+    if (video) {
+      video.currentTime = time;
+      setCurrentTime(time);
+    }
   };
 
   return (
     <div>
-      <h1>Video Processor</h1>
-      <input
-        type="file"
-        accept="video/*"
-        onChange={handleFileUpload}
-        style={{ marginBottom: "20px" }}
-      />
+      {/* Pre-upload layout */}
+      {!videoURL && (
+        <div className="container">
+          <h1 className="container-title">TempoLab</h1>
+          <h2 className="container-heading">Learn to dance, anywhere, anytime.</h2>
+          <input
+            type="file"
+            accept="video/*"
+            className="upload-button"
+            onChange={handleFileUpload}
+          />
+        </div>
+      )}
+
+      {/* Post-upload layout */}
       {videoURL && (
-        <div>
-          {/* Hidden video element for playback control */}
-          <video
-            ref={videoRef}
-            src={videoURL}
-            style={{ display: "none" }}
-            autoPlay
-          />
+        <div className="video-container">
+          {/* Hidden video element for playback */}
+          <video ref={videoRef} src={videoURL} style={{ display: "none" }} />
+
           {/* Canvas for displaying the video */}
-          <canvas
-            ref={canvasRef}
-            onClick={togglePlayPause}
-            style={{
-              cursor: "pointer",
-              border: "1px solid black",
-            }}
-          />
-          {/* Buttons for video options */}
-          <div style={{ marginTop: "20px" }}>
-            <button
-              onClick={toggleMirror}
-              style={{ marginRight: "10px" }}
-            >
-              {isMirrored ? "Unmirror" : "Mirror"}
+          <canvas ref={canvasRef} className="w-full h-full" onClick={togglePlayPause} />
+
+          {/* Sidebar buttons */}
+          <div className="video-sidebar">
+            <button onClick={toggleMirror}>
+              Mirror {isMirrored ? "On" : "Off"}
             </button>
-            
-            <button
-              onClick={() => changeSpeed(1)}
-              style={{ marginRight: "10px" }}
-            >
-              Normal Speed
-            </button>
-            <button
-              onClick={() => changeSpeed(0.75)}
-              style={{ marginRight: "10px" }}
-            >
-              Slow (0.75x)
-            </button>
-            <button
-              onClick={() => changeSpeed(0.5)}
-              style={{ marginRight: "10px" }}
-            >
-              Very Slow (0.5x)
-            </button>
-            <button
-              onClick={() => changeSpeed(0.25)}
-              style={{ marginRight: "10px" }}
-            >
-              Slowest (0.25x)
-            </button>
+
+            {/* Speed dropdown */}
+            <div className="dropdown">
+              <button className="dropdown-btn" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                Speed {playbackRate}x
+              </button>
+              {isDropdownOpen && (
+                <div className="dropdown-menu">
+                  <button onClick={() => changeSpeed(1)}>1x Speed</button>
+                  <button onClick={() => changeSpeed(0.75)}>0.75x Speed</button>
+                  <button onClick={() => changeSpeed(0.5)}>0.5x Speed</button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Scroll bar for seeking */}
+          <div className="video-scrollbar">
+            <input
+              type="range"
+              min="0"
+              max={duration}
+              step="0.1"
+              value={currentTime}
+              onChange={handleSeek}
+            />
           </div>
         </div>
       )}
