@@ -52,8 +52,10 @@ export default function Home() {
       }
 
       const data = await response.json();
+      console.log(data);
       setBPM(data.tempo);
       setTimestamps(data.beats);
+      
     } catch (error) {
       console.error("Error analyzing beats:", error);
     }
