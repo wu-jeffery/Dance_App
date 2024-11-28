@@ -7,18 +7,55 @@ import { useEffect, useRef, useState } from "react";
 export default function Home() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoURL, setVideoURL] = useState<string | null>(null);
+  const [audioURL, setAudioURL] = useState<string | null>(null); 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isMirrored, setIsMirrored] = useState<boolean>(false);
   const [playbackRate, setPlaybackRate] = useState<number>(1);
+  const [bpm, setBPM] = useState<number | null>(null);
+  const [timestamps, setTimestamps] = useState<number[] | null>(null);
 
   // file upload
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setVideoFile(file);
       const url = URL.createObjectURL(file); 
       setVideoURL(url);
+    }
+  };
+
+  // Effect to send video to backend whenever `videoFile` is updated
+  useEffect(() => {
+    if (videoFile) {
+      sendVideoToBackend(); // Trigger backend upload
+    }
+  }, [videoFile]);
+
+  const sendVideoToBackend = async () => {
+    if (!videoFile) {
+      console.error("No video file selected.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("video", videoFile);
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/analyze-beats", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setBPM(data.tempo);
+      setTimestamps(data.beats);
+    } catch (error) {
+      console.error("Error analyzing beats:", error);
     }
   };
 

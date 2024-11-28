@@ -9,6 +9,8 @@ readme = "README.md"
 python = ">=3.12,<3.13"
 flask = "^3.1.0"
 ffmpeg = "^1.4"
+react = "^4.3.0"
+next = "^1.0.1"
 
 
 [build-system]
