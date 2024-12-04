@@ -15,7 +15,10 @@ export default function Home() {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  
+  const [isLooping, setIsLooping] = useState(false);
+  const [loopStart, setLoopStart] = useState<number | null>(null);
+  const [loopEnd, setLoopEnd] = useState<number | null>(null);
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -130,6 +133,7 @@ export default function Home() {
       });
   
       video.playbackRate = playbackRate; // Set playback speed
+      drawFrame();
     }
   }, [videoURL, isMirrored, bpm, playbackRate]);
   
@@ -152,7 +156,7 @@ export default function Home() {
         video.removeEventListener("loadedmetadata", setVideoDuration);
       };
     }
-  }, [videoRef]);
+  }, [videoURL, isMirrored, playbackRate]);
 
   const togglePlayPause = () => {
     const video = videoRef.current;
@@ -168,7 +172,6 @@ export default function Home() {
 
   const toggleMirror = () => setIsMirrored(
     (prev) => !prev
-
   );
   const changeSpeed = (speed: number) => {
     setPlaybackRate(speed);
@@ -184,13 +187,55 @@ export default function Home() {
     }
   };
 
+  // looping 
+  const toggleLooping = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isLooping) {
+      // Turn off looping
+      setIsLooping(false);
+      setLoopStart(null);
+      setLoopEnd(null);
+    } else {
+      // Set loop start time when first clicking
+      if (!loopStart) {
+        setLoopStart(video.currentTime);
+        alert("Loop start set! Now set the loop end by clicking again.");
+      } else if (!loopEnd) {
+        setLoopEnd(video.currentTime);
+        setIsLooping(true);
+        alert("Loop end set! The video will now loop between these times.");
+      }
+    }
+  };
+
+    // Effect to handle looping
+    useEffect(() => {
+      const video = videoRef.current;
+  
+      if (!video || !isLooping || loopStart === null || loopEnd === null) return;
+  
+      const handleTimeUpdate = () => {
+        if (video.currentTime >= loopEnd) {
+          video.currentTime = loopStart;
+        }
+      };
+  
+      video.addEventListener("timeupdate", handleTimeUpdate);
+  
+      return () => {
+        video.removeEventListener("timeupdate", handleTimeUpdate);
+      };
+    }, [isLooping, loopStart, loopEnd]);
+
   return (
     <div>
       {/* Pre-upload layout */}
       {!videoURL && (
         <div className="container">
-          <h1 className="container-title">TempoLab</h1>
-          <h2 className="container-heading">Learn to dance, anywhere, anytime.</h2>
+          <h1 className="container-title">TEMP8</h1>
+          <h2 className="container-heading">Never miss a beat again.</h2>
           <input
             type="file"
             accept="video/*"
@@ -228,6 +273,10 @@ export default function Home() {
                 </div>
               )}
             </div>
+            {/* loop button */}
+            <button onClick={toggleLooping}>
+              {isLooping ? "Disable Loop" : "Set Loop"}
+            </button>
           </div>
 
           {/* Scroll bar for seeking */}
